@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #00F0FF;
+  --color-primary-cyan: #0de3f2;
+  --color-background-light: #f5f8f8;
+  --color-background-dark: #05050A;
+  --color-surface: rgba(20, 20, 30, 0.45);
+  --color-surface-border: rgba(255, 255, 255, 0.08);
+  --color-surface-glass: rgba(20, 20, 30, 0.45);
+  --color-surface-glass-hover: rgba(20, 20, 30, 0.6);
+  --color-surface-card: rgba(20, 20, 30, 0.2);
+  --color-border-glass: rgba(255, 255, 255, 0.08);
+  --color-muted: #8A8A93;
+  --color-accent: #FF003C;
+  --color-accent-pink: #FF003C;
+  --color-text-main: #F4F4F5;
+  --color-text-muted: #8A8A93;
+  --color-skeleton: #1A1A24;
+  --color-neon-green: #3cf91a;
+
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-outfit);
+  --font-mono: var(--font-chivo-mono);
+
+  --animate-marquee: marquee 25s linear infinite;
+  --animate-shake: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-main);
+  font-family: var(--font-body);
+}
+
+.glass-panel {
+  background-color: var(--color-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-glass);
+}
+
+.glass-card {
+  background-color: var(--color-surface-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-glass);
+  transition: all 0.2s ease-in-out;
+}
+
+.glass-card:hover {
+  background-color: var(--color-surface-glass-hover);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
