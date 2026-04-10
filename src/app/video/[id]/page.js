@@ -48,6 +48,7 @@ export default function VideoPage({ params }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tiktok_url: tiktokUrl,
+        tiktok_id: oembed?.embed_product_id || null,
         title: oembed?.title || "TikTok Video",
         author_name: oembed?.author_name || "Unknown",
         author_url: oembed?.author_url || tiktokUrl,
@@ -116,7 +117,8 @@ export default function VideoPage({ params }) {
     );
   }
 
-  const videoId = extractVideoId(video.tiktok_url);
+  const videoId = video.tiktok_id || extractVideoId(video.tiktok_url);
+  const isValidEmbedId = /^\d+$/.test(videoId);
 
   return (
     <div className="min-h-screen flex flex-col bg-background-dark">
@@ -140,7 +142,7 @@ export default function VideoPage({ params }) {
 
           <div className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
             <div className="w-full max-w-[380px] flex flex-col items-center gap-4">
-              {videoId ? (
+              {isValidEmbedId ? (
                 <iframe
                   src={`https://www.tiktok.com/embed/v2/${videoId}?lang=en-US`}
                   className="w-full rounded-xl border border-border-glass"
@@ -150,12 +152,17 @@ export default function VideoPage({ params }) {
                   sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                 />
               ) : (
-                /* Fallback thumbnail */
-                <div className="w-full aspect-[9/16] rounded-xl overflow-hidden bg-surface-card border border-border-glass flex items-center justify-center">
+                /* Fallback thumbnail when video ID is missing or invalid */
+                <div className="w-full aspect-[9/16] rounded-xl overflow-hidden bg-surface-card border border-border-glass flex flex-col items-center justify-center relative">
                   {video.thumbnail_url
-                    ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-                    : <span className="text-muted text-6xl">▶</span>
+                    ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover opacity-50" />
+                    : <div className="absolute inset-0 bg-background-dark/80" />
                   }
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                    <span className="text-muted text-5xl mb-4">▶</span>
+                    <p className="text-white font-display font-bold text-lg">Preview Unavailable</p>
+                    <p className="text-muted text-sm mt-2">Watch the full video directly on TikTok.</p>
+                  </div>
                 </div>
               )}
               {/* Video info card */}
@@ -232,7 +239,7 @@ export default function VideoPage({ params }) {
 
           {!videoCollapsed && (
             <div className="flex justify-center px-4 pb-4">
-              {videoId ? (
+              {isValidEmbedId ? (
                 <iframe
                   src={`https://www.tiktok.com/embed/v2/${videoId}?lang=en-US`}
                   className="w-full max-w-[340px] rounded-xl border border-border-glass"
@@ -242,11 +249,15 @@ export default function VideoPage({ params }) {
                   sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                 />
               ) : (
-                <div className="w-full max-w-[340px] aspect-[9/16] rounded-xl overflow-hidden bg-surface-card border border-border-glass flex items-center justify-center">
+                <div className="w-full max-w-[340px] aspect-[9/16] rounded-xl overflow-hidden bg-surface-card border border-border-glass flex flex-col items-center justify-center relative">
                   {video.thumbnail_url
-                    ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-                    : <span className="text-muted text-5xl">▶</span>
+                    ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover opacity-50" />
+                    : <div className="absolute inset-0 bg-background-dark/80" />
                   }
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                    <span className="text-muted text-4xl mb-3">▶</span>
+                    <p className="text-white font-display font-bold text-base">Preview Unavailable</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -307,13 +318,8 @@ function extractVideoId(url) {
   if (!url) return "";
   const videoMatch = url.match(/\/video\/(\d+)/);
   if (videoMatch) return videoMatch[1];
-  const shortMatch = url.match(/(?:vm\.tiktok\.com|tiktok\.com\/t)\/([A-Za-z0-9]+)/);
-  if (shortMatch) return shortMatch[1];
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split("/").filter(Boolean);
-    return parts[parts.length - 1] || "";
-  } catch {
-    return "";
-  }
+  
+  // We can't reliably extract numeric ID from short urls synchronously
+  // Better to return empty so it falls back gracefully
+  return "";
 }

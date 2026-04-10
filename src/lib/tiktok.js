@@ -17,6 +17,7 @@ export async function fetchTikTokOembed(url) {
       provider_name: data.provider_name || "TikTok",
       width: data.thumbnail_width || 576,
       height: data.thumbnail_height || 1024,
+      embed_product_id: data.embed_product_id || null,
     };
   } catch {
     return null;
