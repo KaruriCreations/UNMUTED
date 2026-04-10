@@ -115,16 +115,16 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background-dark overflow-hidden">
       <Navbar />
 
-      <main className="flex flex-1 overflow-hidden">
+      <main className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden relative">
         {/* Left Sidebar: Profile Identity */}
-        <aside className="w-[280px] shrink-0 border-r border-border-glass bg-background-dark flex flex-col p-6 h-[calc(100vh-65px)] overflow-y-auto no-scrollbar">
+        <aside className="w-full md:w-[280px] shrink-0 border-b md:border-b-0 md:border-r border-border-glass bg-background-dark flex flex-col p-6 h-auto md:h-full md:overflow-y-auto no-scrollbar">
           {/* Avatar */}
           <div className="flex flex-col items-center gap-4 mb-10">
             <div className="relative group">
-              <div className="w-[120px] h-[120px] rounded-lg border-2 border-primary overflow-hidden shadow-[0_0_15px_rgba(0,240,255,0.3)] bg-surface-card flex items-center justify-center">
+              <div className="w-[100px] h-[100px] md:w-[120px] md:h-[120px] rounded-lg border-2 border-primary overflow-hidden shadow-[0_0_15px_rgba(0,240,255,0.3)] bg-surface-card flex items-center justify-center">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -138,7 +138,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="text-center">
-              <h1 className="font-display text-2xl font-bold text-accent tracking-wider">
+              <h1 className="font-display text-xl md:text-2xl font-bold text-accent tracking-wider">
                 @{profile?.username}
               </h1>
               <p className="font-mono text-muted text-xs mt-1">
@@ -230,14 +230,14 @@ export default function ProfilePage() {
         </aside>
 
         {/* Right: Activity Feed */}
-        <section className="flex-1 flex flex-col h-[calc(100vh-65px)] bg-background-dark relative">
-          <div className="sticky top-0 z-10 glass-panel border-x-0 border-t-0 px-8 py-4 flex justify-between items-center">
+        <section className="flex-1 flex flex-col md:h-full bg-background-dark relative overflow-y-visible md:overflow-y-auto no-scrollbar">
+          <div className="sticky top-0 z-10 glass-panel border-x-0 border-t-0 px-4 md:px-8 py-4 flex justify-between items-center">
             <h2 className="font-display text-xl font-bold tracking-widest flex items-center gap-2">
               📋 ACTIVITY LOG
             </h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar px-8 py-6 flex flex-col gap-3">
+          <div className="flex-1 overflow-y-visible md:overflow-y-auto no-scrollbar px-4 md:px-8 py-6 flex flex-col gap-3">
             {comments.length === 0 ? (
               <div className="text-center py-16">
                 <div className="text-5xl mb-4">🔇</div>
