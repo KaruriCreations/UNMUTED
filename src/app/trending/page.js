@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function TrendingPage() {
   const [videos, setVideos] = useState([]);
@@ -66,7 +67,7 @@ export default function TrendingPage() {
           ))}
         </div>
 
-        {loading ? (
+     {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="glass-panel rounded-lg overflow-hidden animate-pulse">
@@ -94,7 +95,10 @@ export default function TrendingPage() {
             ))}
           </div>
         )}
-      </main>
+   </main>
+   
+   {/* Global Loading Screen */}
+   <LoadingScreen show={loading} message="Loading trending videos..." />
     </div>
   );
 }

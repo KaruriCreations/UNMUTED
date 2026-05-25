@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import CommentCard from "@/components/CommentCard";
 import CommentCompose from "@/components/CommentCompose";
 import { createClient } from "@/lib/supabase";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function VideoPage({ params }) {
   const { id } = use(params);

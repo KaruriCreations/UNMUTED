@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { createClient } from "@/lib/supabase";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -32,8 +33,16 @@ export default function Home() {
     setLoading(true);
 
     // Fetch oEmbed data
-    const oembedRes = await fetch(`/api/tiktok?url=${encodeURIComponent(url)}`);
-    const oembed = oembedRes.ok ? await oembedRes.json() : null;
+    let oembed = null;
+    try {
+      const oembedRes = await fetch(`/api/tiktok?url=${encodeURIComponent(url)}`);
+      if (oembedRes.ok) {
+        oembed = await oembedRes.json();
+      }
+    } catch (error) {
+      console.error('Failed to fetch TikTok oEmbed:', error);
+      // oembed remains null
+    }
 
     // Create or find existing video entry
     const res = await fetch("/api/videos", {
@@ -113,39 +122,42 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Trending Ticker */}
-      <div className="fixed bottom-0 w-full glass-panel border-b-0 border-l-0 border-r-0 rounded-none h-12 flex items-center overflow-hidden group">
-        <div className="flex whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused] text-sm font-body text-muted">
-          {recentVideos.length > 0 ? (
-            <>
-              <div className="flex items-center space-x-12 px-6">
-                {recentVideos.map((v) => (
-                  <a key={v.id} href={`/video/${v.id}`} className="hover:text-accent cursor-pointer transition-colors flex items-center gap-2">
-                    <span className="text-accent">🔥</span> @{v.author_name} • <span className="text-primary">💬 {v.comment_count || 0}</span>
-                  </a>
-                ))}
-              </div>
-              <div className="flex items-center space-x-12 px-6">
-                {recentVideos.map((v) => (
-                  <a key={`dup-${v.id}`} href={`/video/${v.id}`} className="hover:text-accent cursor-pointer transition-colors flex items-center gap-2">
-                    <span className="text-accent">🔥</span> @{v.author_name} • <span className="text-primary">💬 {v.comment_count || 0}</span>
-                  </a>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              {[1, 2].map((i) => (
-                <div key={i} className="flex items-center space-x-12 px-6">
-                  <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Paste a TikTok URL to get started • <span className="text-primary">💬 Unmute</span></span>
-                  <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Join the conversation • <span className="text-primary">💬 Comment</span></span>
-                  <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Browse trending discussions • <span className="text-primary">💬 Vote</span></span>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+       {/* Trending Ticker */}
+       <div className="fixed bottom-0 w-full glass-panel border-b-0 border-l-0 border-r-0 rounded-none h-12 flex items-center overflow-hidden group">
+         <div className="flex whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused] text-sm font-body text-muted">
+           {recentVideos.length > 0 ? (
+             <>
+               <div className="flex items-center space-x-12 px-6">
+                 {recentVideos.map((v) => (
+                   <a key={v.id} href={`/video/${v.id}`} className="hover:text-accent cursor-pointer transition-colors flex items-center gap-2">
+                     <span className="text-accent">🔥</span> @{v.author_name} • <span className="text-primary">💬 {v.comment_count || 0}</span>
+                   </a>
+                 ))}
+               </div>
+               <div className="flex items-center space-x-12 px-6">
+                 {recentVideos.map((v) => (
+                   <a key={`dup-${v.id}`} href={`/video/${v.id}`} className="hover:text-accent cursor-pointer transition-colors flex items-center gap-2">
+                     <span className="text-accent">🔥</span> @{v.author_name} • <span className="text-primary">💬 {v.comment_count || 0}</span>
+                   </a>
+                 ))}
+               </div>
+             </>
+           ) : (
+             <>
+               {[1, 2].map((i) => (
+                 <div key={i} className="flex items-center space-x-12 px-6">
+                   <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Paste a TikTok URL to get started • <span className="text-primary">💬 Unmute</span></span>
+                   <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Join the conversation • <span className="text-primary">💬 Comment</span></span>
+                   <span className="flex items-center gap-2"><span className="text-accent">🔥</span> Browse trending discussions • <span className="text-primary">💬 Vote</span></span>
+                 </div>
+               ))}
+             </>
+           )}
+         </div>
+       </div>
+       
+       {/* Global Loading Screen */}
+       <LoadingScreen show={loading} message="Processing TikTok..." />
+     </div>
+   );
 }
