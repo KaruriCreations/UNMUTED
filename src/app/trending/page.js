@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
 import LoadingScreen from "@/components/LoadingScreen";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function TrendingPage() {
   const [videos, setVideos] = useState([]);
@@ -67,14 +68,14 @@ export default function TrendingPage() {
           ))}
         </div>
 
-     {loading ? (
+        {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="glass-panel rounded-lg overflow-hidden animate-pulse">
-                <div className="h-[180px] bg-skeleton" />
+              <div key={i} className="glass-panel rounded-lg overflow-hidden">
+                <SkeletonLoader width="100%" height="180px" borderRadius="lg" className="mb-5" />
                 <div className="p-5">
-                  <div className="h-5 bg-skeleton rounded mb-3 w-3/4" />
-                  <div className="h-4 bg-skeleton rounded w-1/2" />
+                  <SkeletonLoader width="100%" height="20px" borderRadius="sm" className="mb-3" />
+                  <SkeletonLoader width="60%" height="16px" borderRadius="sm" />
                 </div>
               </div>
             ))}

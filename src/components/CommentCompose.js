@@ -2,30 +2,39 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
+import LoadingScreen from "./LoadingScreen";
 
 export default function CommentCompose({ videoId, parentId = null, currentUser, onPosted, replyingTo = null, onCancelReply }) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const supabase = createClient();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() || !currentUser) return;
 
+    setError("");
     setLoading(true);
-    const { error } = await supabase.from("comments").insert({
-      video_id: videoId,
-      user_id: currentUser.id,
-      parent_id: parentId,
-      content: content.trim(),
-    });
+    try {
+      const { error: postError } = await supabase.from("comments").insert({
+        video_id: videoId,
+        user_id: currentUser.id,
+        parent_id: parentId,
+        content: content.trim(),
+      });
 
-    if (!error) {
+      if (postError) throw postError;
+      
       setContent("");
       onPosted?.();
       onCancelReply?.();
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      setError("Failed to post comment. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (!currentUser) {
@@ -63,9 +72,19 @@ export default function CommentCompose({ videoId, parentId = null, currentUser, 
           disabled={loading || !content.trim()}
           className="bg-primary text-background-dark font-display font-semibold uppercase tracking-wider text-sm px-6 py-3 rounded-lg hover:bg-white hover:shadow-[0_0_16px_rgba(13,227,242,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          {loading ? "..." : "Post"}
+          {loading ? (
+            <>
+              <span className="animate-spin mr-2">⏳</span>
+              Posting...
+            </>
+          ) : "Post"}
         </button>
       </div>
+      {error && (
+        <div className="mt-2 w-full text-accent text-sm">
+          {error}
+        </div>
+      )}
     </form>
   );
 }

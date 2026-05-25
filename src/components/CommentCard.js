@@ -2,12 +2,66 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
+import SkeletonLoader from "./SkeletonLoader";
 
-export default function CommentCard({ comment, currentUser, onReply, depth = 0 }) {
+export default function CommentCard({ comment, currentUser, onReply, depth = 0, isLoading = false }) {
   const [voteState, setVoteState] = useState(comment.user_vote || null); // 'up', 'down', or null
   const [upvotes, setUpvotes] = useState(comment.upvotes || 0);
   const [downvotes, setDownvotes] = useState(comment.downvotes || 0);
   const supabase = createClient();
+
+  // Handle loading state
+  if (isLoading || !comment) {
+    return (
+      <div className={`glass-card rounded-lg p-4 w-full group relative ${depth > 0 ? "ml-8 border-l-2 border-l-border-glass" : ""}`}>
+        <div className="flex gap-3">
+          {/* Avatar skeleton */}
+          <SkeletonLoader width="8" height="8" borderRadius="full" className="shrink-0" />
+          
+          {/* Content skeleton */}
+          <div className="flex-1 min-w-0">
+            <div className="flex gap-2 mb-1">
+              <SkeletonLoader width="40" height="4" borderRadius="sm" className="mb-1" />
+              <SkeletonLoader width="20" height="4" borderRadius="sm" />
+            </div>
+            <SkeletonLoader width="100%" height="16" borderRadius="sm" className="mb-2" />
+            <SkeletonLoader width="80%" height="16" borderRadius="sm" />
+            
+            {/* Action buttons skeleton */}
+            <div className="mt-2 flex gap-4">
+              <SkeletonLoader width="24" height="20" borderRadius="sm" />
+              {currentUser && (
+                <SkeletonLoader width="24" height="20" borderRadius="sm" />
+              )}
+            </div>
+          </div>
+          
+          {/* Vote column skeleton */}
+          <div className="flex flex-col items-center gap-0.5 shrink-0 px-1">
+            <SkeletonLoader width="20" height="20" borderRadius="full" />
+            <SkeletonLoader width="20" height="4" borderRadius="sm" />
+            <SkeletonLoader width="20" height="20" borderRadius="full" />
+          </div>
+        </div>
+        
+        {/* Replies skeleton */}
+        {depth === 0 && (
+          <div className="mt-3 flex flex-col gap-3">
+            {[1, 2, 3].map((i) => (
+              <CommentCard 
+                key={i}
+                comment={{}}
+                currentUser={currentUser}
+                onReply={onReply}
+                depth={1}
+                isLoading={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const handleVote = async (type) => {
     if (!currentUser) {

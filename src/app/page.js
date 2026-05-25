@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { createClient } from "@/lib/supabase";
 import LoadingScreen from "@/components/LoadingScreen";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -22,50 +23,67 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!url.includes("tiktok.com")) {
-      setError("Please enter a valid TikTok URL.");
-      return;
-    }
+   const handleSubmit = async (e) => {
+     e.preventDefault();
+     
+     // Basic validation
+     if (!url.trim()) {
+       setError("Please enter a TikTok URL.");
+       return;
+     }
+     
+     if (!url.includes("tiktok.com")) {
+       setError("Please enter a valid TikTok URL.");
+       return;
+     }
 
-    setError("");
-    setLoading(true);
+     setError("");
+     setLoading(true);
 
-    // Fetch oEmbed data
-    let oembed = null;
-    try {
-      const oembedRes = await fetch(`/api/tiktok?url=${encodeURIComponent(url)}`);
-      if (oembedRes.ok) {
-        oembed = await oembedRes.json();
-      }
-    } catch (error) {
-      console.error('Failed to fetch TikTok oEmbed:', error);
-      // oembed remains null
-    }
+     // Fetch oEmbed data with timeout
+     let oembed = null;
+     try {
+       const controller = new AbortController();
+       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+       
+       const oembedRes = await fetch(`/api/tiktok?url=${encodeURIComponent(url)}`, {
+         signal: controller.signal
+       });
+       
+       clearTimeout(timeoutId);
+       
+       if (oembedRes.ok) {
+         oembed = await oembedRes.json();
+       }
+     } catch (error) {
+       if (error.name !== 'AbortError') {
+         console.error('Failed to fetch TikTok oEmbed:', error);
+       }
+       // Continue with default values - don't fail the whole operation
+     }
 
-    // Create or find existing video entry
-    const res = await fetch("/api/videos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tiktok_url: url,
-        title: oembed?.title || "TikTok Video",
-        author_name: oembed?.author_name || "Unknown",
-        author_url: oembed?.author_url || url,
-        thumbnail_url: oembed?.thumbnail_url || null,
-      }),
-    });
+     // Create or find existing video entry
+     const res = await fetch("/api/videos", {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({
+         tiktok_url: url,
+         title: oembed?.title || "TikTok Video",
+         author_name: oembed?.author_name || "Unknown",
+         author_url: oembed?.author_url || url,
+         thumbnail_url: oembed?.thumbnail_url || null,
+       }),
+     });
 
-    const data = await res.json();
-    setLoading(false);
+     const data = await res.json();
+     setLoading(false);
 
-    if (data.id) {
-      router.push(`/video/${data.id}`);
-    } else {
-      setError(data.error || "Something went wrong. Try again.");
-    }
-  };
+     if (data.id) {
+       router.push(`/video/${data.id}`);
+     } else {
+       setError(data.error || "Something went wrong. Try again.");
+     }
+   };
 
   return (
     <div className="flex-1 flex flex-col relative min-h-screen">
