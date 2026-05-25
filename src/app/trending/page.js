@@ -17,9 +17,13 @@ export default function TrendingPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/videos?sort=${sort}&limit=30`, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch videos: ${res.status}`);
+      }
       const data = await res.json();
       setVideos(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching videos:", error);
       setVideos([]);
     }
     setLoading(false);

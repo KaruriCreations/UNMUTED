@@ -39,11 +39,15 @@ export async function POST(request) {
   }
 
   // Check if video already exists
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("videos")
     .select("id")
     .eq("tiktok_url", tiktok_url)
-    .single();
+    .maybeSingle();
+
+  if (existingError && !existingError.message.includes("No rows found")) {
+    return NextResponse.json({ error: existingError.message }, { status: 500 });
+  }
 
   if (existing) {
     return NextResponse.json({ id: existing.id, existing: true });
